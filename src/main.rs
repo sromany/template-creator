@@ -1,6 +1,15 @@
-use std::path::PathBuf;
-
 use clap::{arg, command, value_parser, ArgAction, Command};
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::process::Command as OsCmd;
+
+struct ProjectManager {
+    pub package_manager: (&'static str, &'static str),
+    pub command: &'static str,
+
+}
+static mut PROCESS_COMMAND_MAP: HashMap<&str, &str> =
+    HashMap::from([("svelte", "npm create vite --template sveltet")]);
 
 fn main() {
     // Parse arguments from cmdline
@@ -43,16 +52,27 @@ fn main() {
         // You can check the value provided by positional arguments, or option arguments
         if let Some(name) = matches.get_one::<String>("name") {
             println!("Project type: {name}");
-        }
-        if let Some(config_file) = matches.get_one::<PathBuf>("file") {
-            println!("Value for config: {}", config_file.display());
+            if let Some(config_file) = matches.get_one::<PathBuf>("file") {
+                println!("Value for config: {}", config_file.display());
+            }
+            // Check if binaries are installed in order to create
+            //      map[name] -> (&Nodejs, &Pm(packet-manager), &Command, &Args)
+            //      for e in map[name] { e.exist() ? }.all()
+            // Run command vite create [svelte] [default:javascript]
+            if cfg!(target_os = "linux") {
+                let output =
+                // Process::Command::new(map[name].&Command).args([...map[name].&Args])
+                OsCmd::new("sh")
+                    .arg("-c")
+                    .arg(format!("echo {} {}", PROCESS_COMMAND_MAP[].StrCommand, PROCESS_COMMAND_MAP["name"].))
+                    .output()
+                    .expect("failed to execute process");
+                println!("{:?}", output.stdout);
+            };
+        } else {
+
         }
 
-        // Check if binaries are installed in order to create
-        //      map[name] -> (&Nodejs, &Pm(packet-manager), &StrCommand)
-        //      for e in map[name] { e.exist() ? }.all()
-        //      Process::Command::run(map[name].&StrCommand)
-        // Run command vite create [svelte] [default:javascript]
     }
 
     // install (p)npm svelte-routing/svelte-motion/svelte-lucide
